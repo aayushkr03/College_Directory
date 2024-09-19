@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Student Interface</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+		
+		nav ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: space-between;
+		}
+		
+		nav li {
+			margin-right: 20px;
+		}
+		
+		nav a {
+			color: #337ab7;
+			text-decoration: none;
+		}
+		
+		nav a:hover {
+			color: #23527c;
+		}
+		
+		section {
+			margin-bottom: 20px;
+		}
+		
+		h2 {
+			margin-top: 0;
+		}
+		
+		#profile-details, #search-results, #advisors-list {
+			margin-top: 10px;
+		}
+		
+		#search-bar {
+			width: 50%;
+			padding: 10px;
+			font-size: 16px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+		
+		#search-btn {
+			background-color: #337ab7;
+			color: #fff;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		
+		#search-btn:hover {
+			background-color: #23527c;
+		}
+	</style>
+</head>
+<body>
+	<!-- Navigation Bar -->
+	<nav>
+		<ul>
+			<li><a href="#profile">View Personal Profile</a></li>
+			<li><a href="#search">Search for Other Students</a></li>
+			<li><a href="#advisors">Contact Faculty Advisors</a></li>
+		</ul>
+	</nav>
+
+	<!-- Profile Section -->
+	<section id="profile">
+		<h2>Personal Profile</h2>
+		<div id="profile-details">
+			<!-- Profile information will be displayed here -->
+		</div>
+	</section>
+
+	<!-- Search Section -->
+	<section id="search">
+		<h2>Search for Other Students</h2>
+		<input type="search" id="search-bar" placeholder="Search by name, department, or year">
+		<button id="search-btn">Search</button>
+		<div id="search-results">
+			<!-- Search results will be displayed here -->
+		</div>
+	</section>
+
+	<!-- Advisors Section -->
+	<section id="advisors">
+		<h2>Contact Faculty Advisors</h2>
+		<div id="advisors-list">
+			<!-- Advisor list will be displayed here -->
+		</div>
+	</section>
+
+	<script>
+		// Fetch profile details from database
+		fetch('/api/profile')
+			.then(response => response.json())
+			.then(data => {
+				const profileDetails = document.getElementById('profile-details');
+				profileDetails.innerHTML = `
+					<p>Name: ${data.name}</p>
+					<p>Photo: <img src="${data.photo}" alt="Profile Photo"></p>
+					<p>Contact Details: ${data.contactDetails}</p>
+					<p>Academic Information:</p>
+					<ul>
+						<li>Courses: ${data.courses}</li>
+						<li>Grades: ${data.grades}</li>
+						<li>Attendance: ${data.attendance}</li>
+					</ul>
+				`;
+			});
+
+		// Implement search functionality
+		const searchInput = document.getElementById('search-bar');
+		const searchBtn = document.getElementById('search-btn');
+		const searchResults = document.getElementById('search-results');
+
+		searchBtn.addEventListener('click', () => {
+			const searchTerm = searchInput.value.trim();
+			fetch(`/api/search?q=${searchTerm}`)
+				.then(response => response.json())
+				.then(data => {
+					searchResults.innerHTML = '';
+					data.forEach(student => {
+						const studentHTML = `
+							<div>
+								<p>Name: ${student.name}</p>
+								<p>Department: ${student.department}</p>
+								<p>Year: ${student.year}</p>
+							</div>
+						`;
+						searchResults.innerHTML += studentHTML;
+					});
+				});
+		});
+
+		// Fetch and display advisor details from database
+		fetch('/api/advisors')
+			.then(response => response.json())
+			.then(data => {
+				const advisorsList = document.getElementById('advisors-list');
+				advisorsList.innerHTML = '';
+				data.forEach(advisor => {
+					const advisorHTML = `
+						<div>
+							<p>Name: ${advisor.name}</p>
+							<p>Email: <a href="mailto:${advisor.email}">${advisor.email}</a></p>
+							<p>Phone: ${advisor.phone}</p>
+						</div>
+					`;
+					advisorsList.innerHTML += advisorHTML;
+				});
+			});
+	</script>
+</body>
+</html>

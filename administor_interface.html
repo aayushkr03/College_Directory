@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Administrator Interface</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+		
+		nav ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: space-between;
+		}
+		
+		nav li {
+			margin-right: 20px;
+		}
+		
+		nav a {
+			color: #337ab7;
+			text-decoration: none;
+		}
+		
+		nav a:hover {
+			color: #23527c;
+		}
+		
+		section {
+			margin-bottom: 20px;
+		}
+		
+		h2 {
+			margin-top: 0;
+		}
+		
+		#manage-records {
+			margin-top: 10px;
+		}
+		
+		#manage-records form {
+			margin-bottom: 20px;
+		}
+		
+		#manage-records input, #manage-records select {
+			width: 50%;
+			padding: 10px;
+			font-size: 16px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			margin-bottom: 10px;
+		}
+		
+		#manage-records button {
+			background-color: #337ab7;
+			color: #fff;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		
+		#manage-records button:hover {
+			background-color: #23527c;
+		}
+		
+		#record-list {
+			margin-top: 10px;
+		}
+		
+		#record-list table {
+			border-collapse: collapse;
+			width: 100%;
+		}
+		
+		#record-list th, #record-list td {
+			border: 1px solid #ddd;
+			padding: 10px;
+			text-align: left;
+		}
+		
+		#record-list th {
+			background-color: #f0f0f0;
+		}
+		
+		#dashboard {
+			margin-top: 10px;
+		}
+		
+		#dashboard canvas {
+			width: 100%;
+			height: 300px;
+			border: 1px solid #ddd;
+		}
+	</style>
+</head>
+<body>
+	<!-- Navigation Bar -->
+	<nav>
+		<ul>
+			<li><a href="#manage-records">Manage Student and Faculty Records</a></li>
+			<li><a href="#dashboard">Dashboard with Graphs</a></li>
+		</ul>
+	</nav>
+
+	<!-- Manage Records Section -->
+	<section id="manage-records">
+		<h2>Manage Student and Faculty Records</h2>
+		<form id="manage-records-form">
+			<input type="text" id="name" placeholder="Name">
+			<input type="email" id="email" placeholder="Email">
+			<select id="role">
+				<option value="">Select Role</option>
+				<option value="student">Student</option>
+				<option value="faculty">Faculty</option>
+			</select>
+			<button id="add-record-btn">Add Record</button>
+			<button id="update-record-btn">Update Record</button>
+			<button id="remove-record-btn">Remove Record</button>
+		</form>
+		<table id="record-list">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Role</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="record-list-body">
+				<!-- Record list will be displayed here -->
+			</tbody>
+		</table>
+	</section>
+
+	<!-- Dashboard Section -->
+	<section id="dashboard">
+		<h2>Dashboard with Graphs</h2>
+		<canvas id="enrollment-chart"></canvas>
+		<canvas id="course-load-chart"></canvas>
+	</section>
+
+	<script>
+		// Implement CRUD operations for student and faculty records in the database
+		const manageRecordsForm = document.getElementById('manage-records-form');
+		const addRecordBtn = document.getElementById('add-record-btn');
+		const updateRecordBtn = document.getElementById('update-record-btn');
+		const removeRecordBtn = document.getElementById('remove-record-btn');
+		const recordListBody = document.getElementById('record-list-body');
+
+		addRecordBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const name = document.getElementById('name').value.trim();
+			const email = document.getElementById('email').value.trim();
+			const role = document.getElementById('role').value.trim();
+
+			if (name && email && role) {
+				fetch('/api/add-record', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						name,
+						email,
+						role
+					})
+				})
+				.then(response => response.json())
+				.then(data => {
+					alert('Record added successfully!');
+					recordListBody.innerHTML += `
+						<tr>
+							<td>${name}</td>
+							<td>${email}</td>
+							<td>${role}</td>
+							<td>
+								<button class="update-btn">Update</button>
+								<button class="remove-btn">Remove</button>
+							</td>
+						</tr>
+					`;
+				})
+				.catch(error => {
+					alert('Error adding record!');
+				});
+			} else {
+				alert('Please fill in all fields!');
+			}
+		});
+
+		updateRecordBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const name = document.getElementById('name').value.trim();
+			const email = document.getElementById('email').value.trim();
+			const role = document.getElementById('role').value.trim();
+
+			if (name && email && role) {
+				fetch('/api/update-record', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						name,
+						email,
+						role
+					})
+				})
+				.then(response => response.json())
+				.then(data => {
+					alert('Record updated successfully!');
+					recordListBody.innerHTML = '';
+					data.forEach(record => {
+						recordListBody.innerHTML += `
+							<tr>
+								<td>${record.name}</td>
+								<td>${record.email}</td>
+								<td>${record.role}</td>
+								<td>
+									<button class="update-btn">Update</button>
+									<button class="remove-btn">Remove</button>
+								</td>
+							</tr>
+						`;
+					});
+				})
+				.catch(error => {
+					alert('Error updating record!');
+				});
+			} else {
+				alert('Please fill in all fields!');
+			}
+		});
+
+		removeRecordBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const name = document.getElementById('name').value.trim();
+		});
+        

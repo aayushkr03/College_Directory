@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Faculty Member Interface</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+		
+		nav ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: space-between;
+		}
+		
+		nav li {
+			margin-right: 20px;
+		}
+		
+		nav a {
+			color: #337ab7;
+			text-decoration: none;
+		}
+		
+		nav a:hover {
+			color: #23527c;
+		}
+		
+		section {
+			margin-bottom: 20px;
+		}
+		
+		h2 {
+			margin-top: 0;
+		}
+		
+		#class-list {
+			margin-top: 10px;
+		}
+		
+		#class-list table {
+			border-collapse: collapse;
+			width: 100%;
+		}
+		
+		#class-list th, #class-list td {
+			border: 1px solid #ddd;
+			padding: 10px;
+			text-align: left;
+		}
+		
+		#class-list th {
+			background-color: #f0f0f0;
+		}
+		
+		#update-profile-form {
+			margin-top: 10px;
+		}
+		
+		#update-profile-form input, #update-profile-form select {
+			width: 50%;
+			padding: 10px;
+			font-size: 16px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			margin-bottom: 10px;
+		}
+		
+		#update-profile-form button {
+			background-color: #337ab7;
+			color: #fff;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		
+		#update-profile-form button:hover {
+			background-color: #23527c;
+		}
+	</style>
+</head>
+<body>
+	<!-- Navigation Bar -->
+	<nav>
+		<ul>
+			<li><a href="#class-list">Manage Class List</a></li>
+			<li><a href="#update-profile">Update Profile</a></li>
+		</ul>
+	</nav>
+
+	<!-- Class List Section -->
+	<section id="class-list">
+		<h2>Class List</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>Student Name</th>
+					<th>Photo</th>
+					<th>Contact Information</th>
+				</tr>
+			</thead>
+			<tbody id="class-list-body">
+				<!-- Class list will be displayed here -->
+			</tbody>
+		</table>
+	</section>
+
+	<!-- Update Profile Section -->
+	<section id="update-profile">
+		<h2>Update Profile</h2>
+		<form id="update-profile-form">
+			<input type="text" id="office-hours" placeholder="Office Hours">
+			<input type="email" id="contact-email" placeholder="Contact Email">
+			<input type="tel" id="phone-number" placeholder="Phone Number">
+			<button id="update-profile-btn">Update Profile</button>
+		</form>
+	</section>
+
+	<script>
+		// Fetch and display class list from database
+		fetch('/api/class-list')
+			.then(response => response.json())
+			.then(data => {
+				const classListBody = document.getElementById('class-list-body');
+				classListBody.innerHTML = '';
+				data.forEach(student => {
+					const studentHTML = `
+						<tr>
+							<td>${student.name}</td>
+							<td><img src="${student.photo}" alt="Student Photo"></td>
+							<td>${student.contactInformation}</td>
+						</tr>
+					`;
+					classListBody.innerHTML += studentHTML;
+				});
+			});
+
+		// Validate and save updated profile information to the database
+		const updateProfileForm = document.getElementById('update-profile-form');
+		const updateProfileBtn = document.getElementById('update-profile-btn');
+
+		updateProfileBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const officeHours = document.getElementById('office-hours').value.trim();
+			const contactEmail = document.getElementById('contact-email').value.trim();
+			const phoneNumber = document.getElementById('phone-number').value.trim();
+
+			if (officeHours && contactEmail && phoneNumber) {
+				fetch('/api/update-profile', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						officeHours,
+						contactEmail,
+						phoneNumber
+					})
+				})
+				.then(response => response.json())
+				.then(data => {
+					alert('Profile updated successfully!');
+				})
+				.catch(error => {
+					alert('Error updating profile!');
+				});
+			} else {
+				alert('Please fill in all fields!');
+			}
+		});
+	</script>
+</body>
+</html>
